@@ -1,0 +1,105 @@
+/**
+ * ============================================================
+ * AIO PAY - Styles globaux + Thème officiel
+ * ============================================================
+ *
+ * Couleurs de marque (extraites du logo) :
+ * - Bordeaux principal : #6B0F1A / #7A1020
+ * - Orange / Or        : #F5A623 / #E8940A
+ * - Blanc              : #FFFFFF
+ * - Fond clair         : #FDF8F6
+ *
+ * Ce fichier définit :
+ * - Les variables CSS de marque
+ * - Les classes utilitaires (boutons, cartes, inputs)
+ * - Le rendu mobile-first
+ * ============================================================
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Couleurs de marque AIO Pay */
+  --aio-bordeaux: #6B0F1A;
+  --aio-bordeaux-dark: #4A0A12;
+  --aio-bordeaux-light: #8B1A2A;
+  --aio-orange: #F5A623;
+  --aio-orange-dark: #E8940A;
+  --aio-orange-light: #FFB84D;
+  --aio-cream: #FDF8F6;
+  --aio-white: #FFFFFF;
+  --aio-gray: #6B7280;
+  --aio-gray-light: #F3F4F6;
+
+  --background: var(--aio-cream);
+  --foreground: #1F2937;
+  --radius: 0.75rem;
+}
+
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+
+  body {
+    @apply bg-[var(--aio-cream)] text-gray-900;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer components {
+  /* Bouton principal (bordeaux) */
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+    background-color: var(--aio-bordeaux);
+  }
+  .btn-primary:hover {
+    background-color: var(--aio-bordeaux-dark);
+  }
+  .btn-primary:focus {
+    --tw-ring-color: var(--aio-bordeaux);
+  }
+
+  /* Bouton secondaire (contour) */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 text-sm font-semibold shadow-sm ring-1 ring-inset transition-all hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50;
+    color: var(--aio-bordeaux);
+    --tw-ring-color: #E5E7EB;
+  }
+  .btn-secondary:focus {
+    --tw-ring-color: var(--aio-bordeaux);
+  }
+
+  /* Bouton accent orange */
+  .btn-accent {
+    @apply inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50;
+    background-color: var(--aio-orange);
+  }
+  .btn-accent:hover {
+    background-color: var(--aio-orange-dark);
+  }
+
+  /* Carte standard */
+  .card {
+    @apply rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100;
+  }
+
+  /* Input standard */
+  .input {
+    @apply block w-full rounded-xl border-0 py-3 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm;
+  }
+  .input:focus {
+    --tw-ring-color: var(--aio-bordeaux);
+  }
+
+  /* Label */
+  .label {
+    @apply block text-sm font-medium text-gray-700 mb-1.5;
+  }
+}
