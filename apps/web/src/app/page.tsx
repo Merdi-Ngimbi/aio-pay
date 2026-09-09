@@ -23,6 +23,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuthStore } from "@/stores/auth-store";
 import { Smartphone, Clock, ShieldCheck, Building2 } from "lucide-react";
+import PublicHeader from "@/components/layout/PublicHeader";
+import Footer from "@/components/layout/Footer";
 
 export default function HomePage() {
   const router = useRouter();
@@ -37,28 +39,8 @@ export default function HomePage() {
   }, [isAuthenticated, loadUser, router]);
 
   return (
-    <div className="min-h-screen" style={{ background: "linear-gradient(180deg, #FDF8F6 0%, #FFFFFF 100%)" }}>
-      {/* Header */}
-      <header className="px-4 py-5">
-        <div className="mx-auto max-w-5xl flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Image
-              src="/icon.png"
-              alt="AIO Pay"
-              width={40}
-              height={40}
-              className="rounded-lg"
-              priority
-            />
-            <span className="text-xl font-bold" style={{ color: "#6B0F1A" }}>
-              AIO Pay
-            </span>
-          </div>
-          <Link href="/login" className="btn-primary text-sm px-4 py-2">
-            Se connecter
-          </Link>
-        </div>
-      </header>
+    <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(180deg, #FDF8F6 0%, #FFFFFF 100%)" }}>
+      <PublicHeader />
 
       {/* Hero */}
       <main className="px-4 pt-8 pb-20">
@@ -135,11 +117,7 @@ export default function HomePage() {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-gray-200 py-8 text-center text-sm text-gray-500">
-        <p>© 2026 AIO Pay — Prototype MVP — République Démocratique du Congo</p>
-        <p className="mt-1">Projet Master Réseau et Sécurité des Systèmes d&apos;Information</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

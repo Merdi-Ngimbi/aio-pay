@@ -2,8 +2,18 @@
  * ============================================================
  * AIO PAY - Page de reçu numérique
  * ============================================================
- * Affiche le détail d'un paiement et permet de télécharger
- * le reçu (PDF à générer côté backend plus tard).
+ *
+ * Affiche toutes les informations nécessaires au reçu :
+ * - Référence AIO Pay
+ * - Nom de l'étudiant, matricule, promotion
+ * - Université, banque de convenance
+ * - Motif, montants, frais de service
+ * - Numéro Mobile Money débité
+ * - Statut et date
+ * - QR code scannable (contient la référence pour vérification)
+ *
+ * Le QR code encode la référence du paiement pour faciliter
+ * le contrôle côté université / guichet.
  * ============================================================
  */
 
@@ -12,6 +22,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuthStore } from "@/stores/auth-store";
 import StudentHeader from "@/components/layout/StudentHeader";
 import { getPaymentById, checkPaymentStatus } from "@/lib/api";
@@ -39,7 +50,7 @@ export default function ReceiptPage() {
   const params = useParams();
   const paymentId = params.id as string;
 
-  const { isAuthenticated, loadUser } = useAuthStore();
+  const { isAuthenticated, loadUser, user } = useAuthStore();
   const [payment, setPayment] = useState<Payment | null>(null);
   const [loading, setLoading] = useState(true);
   const [checking, setChecking] = useState(false);
@@ -62,12 +73,12 @@ export default function ReceiptPage() {
         }
       })
       .catch(() => {
-        // Mode démo
+        // Mode démonstration : reçu complet avec toutes les infos
         setPayment({
           id: paymentId,
-          reference: "AIO-DEMO-" + paymentId.slice(0, 8).toUpperCase(),
-          studentId: "demo",
-          universityId: "upc-demo",
+          reference: "AIO-DEMO-" + String(paymentId).slice(0, 8).toUpperCase(),
+          studentId: user?.id || "demo",
+          universityId: "upc-001",
           bankId: "equity-demo",
           motif: "INSCRIPTION",
           amount: 150,
@@ -78,8 +89,12 @@ export default function ReceiptPage() {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           paidAt: new Date().toISOString(),
+          studentName: user?.fullName || user?.username || "Étudiant Démo",
+          studentNumber: user?.studentNumber || "2024-12345",
+          promotion: user?.promotion || "L2 Informatique 2025-2026",
+          mobileMoneyPhone: "+243812345678",
           university: {
-            id: "upc-demo",
+            id: "upc-001",
             name: "Université Protestante au Congo (UPC)",
             code: "UPC",
             isActive: true,
@@ -89,18 +104,14 @@ export default function ReceiptPage() {
             id: "equity-demo",
             name: "Equity BCDC",
             code: "EQUITY",
-            universityId: "upc-demo",
+            universityId: "upc-001",
             isActive: true,
           },
         });
       })
       .finally(() => setLoading(false));
-  }, [isAuthenticated, paymentId]);
+  }, [isAuthenticated, paymentId, user]);
 
-  /**
-   * Vérifie manuellement le statut auprès de FlexPay
-   * (utile si le webhook a été manqué)
-   */
   const handleCheckStatus = async () => {
     if (!payment) return;
     setChecking(true);
@@ -146,6 +157,25 @@ export default function ReceiptPage() {
       ? XCircle
       : Clock;
 
+  /** Contenu du QR : référence + montant pour vérification rapide */
+  const qrPayload = encodeURIComponent(
+    JSON.stringify({
+      ref: payment.reference,
+      amount: payment.totalAmount,
+      status: payment.status,
+      uni: payment.university?.code || payment.universityId,
+    })
+  );
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${qrPayload}`;
+
+  const studentDisplayName =
+    payment.studentName ||
+    payment.student?.fullName ||
+    payment.student?.username ||
+    user?.fullName ||
+    user?.username ||
+    "—";
+
   return (
     <div className="min-h-screen bg-gray-50">
       <StudentHeader />
@@ -163,10 +193,17 @@ export default function ReceiptPage() {
 
         {/* Carte du reçu */}
         <div className="card space-y-5">
-          {/* Statut */}
-          <div className="flex flex-col items-center py-4">
+          {/* En-tête logo + statut */}
+          <div className="flex flex-col items-center py-2">
+            <Image
+              src="/icon.png"
+              alt="AIO Pay"
+              width={48}
+              height={48}
+              className="rounded-lg mb-3"
+            />
             <StatusIcon
-              className={`h-14 w-14 ${
+              className={`h-12 w-12 ${
                 payment.status === "SUCCESS"
                   ? "text-green-500"
                   : payment.status === "FAILED"
@@ -183,50 +220,94 @@ export default function ReceiptPage() {
             </span>
           </div>
 
-          {/* Montant principal */}
+          {/* Montant */}
           <div className="text-center">
             <p className="text-3xl font-bold text-gray-900">
               {formatAmount(payment.totalAmount)}
             </p>
             <p className="text-sm text-gray-500 mt-1">
-              dont {formatAmount(payment.serviceFee)} de frais de service
+              dont {formatAmount(payment.serviceFee)} de frais de service AIO Pay
             </p>
           </div>
 
           <hr className="border-gray-100" />
 
-          {/* Détails */}
-          <div className="space-y-3 text-sm">
-            <DetailRow label="Référence" value={payment.reference} />
-            <DetailRow
-              label="Motif"
-              value={translateMotif(payment.motif)}
-            />
-            <DetailRow
-              label="Université"
-              value={payment.university?.name || "—"}
-            />
-            <DetailRow
-              label="Banque"
-              value={payment.bank?.name || "—"}
-            />
-            <DetailRow
-              label="Date"
-              value={formatDate(payment.paidAt || payment.createdAt)}
-            />
-            {payment.flexpayReference && (
+          {/* Informations étudiant */}
+          <div>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#F5A623] mb-3">
+              Étudiant
+            </h2>
+            <div className="space-y-2.5 text-sm">
+              <DetailRow label="Nom" value={studentDisplayName} />
               <DetailRow
-                label="Réf. FlexPay"
-                value={payment.flexpayReference}
+                label="Matricule"
+                value={payment.studentNumber || payment.student?.studentNumber || "—"}
               />
-            )}
+              <DetailRow
+                label="Promotion"
+                value={payment.promotion || payment.student?.promotion || "—"}
+              />
+            </div>
+          </div>
+
+          <hr className="border-gray-100" />
+
+          {/* Paiement */}
+          <div>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#F5A623] mb-3">
+              Détails du paiement
+            </h2>
+            <div className="space-y-2.5 text-sm">
+              <DetailRow label="Référence" value={payment.reference} />
+              <DetailRow label="Motif" value={translateMotif(payment.motif)} />
+              <DetailRow
+                label="Université"
+                value={payment.university?.name || "—"}
+              />
+              <DetailRow label="Banque" value={payment.bank?.name || "—"} />
+              <DetailRow
+                label="Mobile Money"
+                value={payment.mobileMoneyPhone || "—"}
+              />
+              <DetailRow
+                label="Date"
+                value={formatDate(payment.paidAt || payment.createdAt)}
+              />
+              {payment.flexpayReference && (
+                <DetailRow label="Réf. FlexPay" value={payment.flexpayReference} />
+              )}
+            </div>
+          </div>
+
+          <hr className="border-gray-100" />
+
+          {/* QR Code */}
+          <div className="flex flex-col items-center py-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#F5A623] mb-3">
+              QR Code de vérification
+            </p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={qrUrl}
+              alt={`QR Code ${payment.reference}`}
+              width={160}
+              height={160}
+              className="rounded-lg border border-gray-100"
+            />
+            <p className="text-xs text-gray-500 mt-2 text-center max-w-[220px]">
+              Scannez ce code pour vérifier la référence {payment.reference}
+            </p>
           </div>
 
           {/* Actions */}
           <div className="flex flex-col gap-3 pt-2">
             {payment.status === "SUCCESS" && (
               <button
-                onClick={() => toast.info("Génération PDF à venir (backend)")}
+                onClick={() =>
+                  toast.info(
+                    "La génération PDF sera disponible après branchement du backend."
+                  )
+                }
                 className="btn-primary w-full"
               >
                 <Download className="mr-2 h-4 w-4" />
@@ -253,7 +334,7 @@ export default function ReceiptPage() {
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-6">
-          Ce reçu a la même valeur qu&apos;un paiement effectué en agence.
+          Ce reçu a la même valeur qu&apos;un paiement effectué en agence bancaire.
         </p>
       </main>
     </div>

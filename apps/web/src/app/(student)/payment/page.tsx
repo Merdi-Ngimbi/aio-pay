@@ -48,7 +48,7 @@ type Step = 1 | 2 | 3 | 4;
 
 export default function PaymentPage() {
   const router = useRouter();
-  const { isAuthenticated, loadUser } = useAuthStore();
+  const { isAuthenticated, loadUser, user } = useAuthStore();
 
   // État du parcours
   const [step, setStep] = useState<Step>(1);
@@ -63,6 +63,8 @@ export default function PaymentPage() {
   const [motif, setMotif] = useState<PaymentMotif | "">("");
   const [amount, setAmount] = useState("");
   const [studentNumber, setStudentNumber] = useState("");
+  const [promotion, setPromotion] = useState("");
+  const [mobileMoneyPhone, setMobileMoneyPhone] = useState("");
 
   // Auth guard
   useEffect(() => {
@@ -70,6 +72,14 @@ export default function PaymentPage() {
       if (!isAuthenticated) router.push("/login");
     });
   }, [isAuthenticated, loadUser, router]);
+
+  // Pré-remplit matricule / promotion depuis le profil
+  useEffect(() => {
+    if (user) {
+      if (user.studentNumber) setStudentNumber(user.studentNumber);
+      if (user.promotion) setPromotion(user.promotion);
+    }
+  }, [user]);
 
   // Charge les universités au montage
   useEffect(() => {
@@ -86,15 +96,17 @@ export default function PaymentPage() {
         }
       })
       .catch(() => {
-        // Mode démo : on injecte UPC si le backend n'est pas encore prêt
+        // Mode démo multi-universités
+        const now = new Date().toISOString();
         setUniversities([
-          {
-            id: "upc-demo",
-            name: "Université Protestante au Congo (UPC)",
-            code: "UPC",
-            isActive: true,
-            createdAt: new Date().toISOString(),
-          },
+          { id: "unikin-001", name: "Université de Kinshasa (UNIKIN)", code: "UNIKIN", isActive: true, createdAt: now },
+          { id: "upc-001", name: "Université Protestante au Congo (UPC)", code: "UPC", isActive: true, createdAt: now },
+          { id: "upn-001", name: "Université Pédagogique Nationale (UPN)", code: "UPN", isActive: true, createdAt: now },
+          { id: "ufasic-001", name: "Université Francophone Afrique-Sicile (UFASIC)", code: "UFASIC", isActive: true, createdAt: now },
+          { id: "aba-001", name: "Académie des Beaux-Arts (ABA)", code: "ABA", isActive: true, createdAt: now },
+          { id: "isau-001", name: "Institut Supérieur d'Architecture et d'Urbanisme (ISAU)", code: "ISAU", isActive: true, createdAt: now },
+          { id: "isp-gombe-001", name: "Institut Supérieur Pédagogique de la Gombe (ISP GOMBE)", code: "ISP-GOMBE", isActive: true, createdAt: now },
+          { id: "hec-001", name: "Hautes Études Commerciales (HEC)", code: "HEC", isActive: true, createdAt: now },
         ]);
       })
       .finally(() => setLoading(false));
@@ -138,7 +150,7 @@ export default function PaymentPage() {
    * Soumission finale → crée le paiement et redirige vers FlexPay
    */
   const handleConfirm = async () => {
-    if (!selectedUniversity || !selectedBank || !motif || !amount) return;
+    if (!selectedUniversity || !selectedBank || !motif || !amount || !mobileMoneyPhone) return;
 
     setSubmitting(true);
     try {
@@ -148,6 +160,8 @@ export default function PaymentPage() {
         motif: motif as PaymentMotif,
         amount: parseFloat(amount),
         studentNumber: studentNumber || undefined,
+        promotion: promotion || undefined,
+        mobileMoneyPhone: mobileMoneyPhone.replace(/\s+/g, ""),
       });
 
       if (res.success && res.data?.redirectUrl) {
@@ -358,10 +372,10 @@ export default function PaymentPage() {
               </div>
             </div>
 
-            {/* Numéro étudiant (optionnel) */}
+            {/* Matricule */}
             <div>
               <label htmlFor="studentNumber" className="label">
-                Numéro d&apos;étudiant (optionnel)
+                Matricule (recommandé)
               </label>
               <input
                 id="studentNumber"
@@ -371,6 +385,42 @@ export default function PaymentPage() {
                 onChange={(e) => setStudentNumber(e.target.value)}
                 className="input"
               />
+            </div>
+
+            {/* Promotion */}
+            <div>
+              <label htmlFor="promotion" className="label">
+                Promotion / Filière (recommandé)
+              </label>
+              <input
+                id="promotion"
+                type="text"
+                placeholder="Ex: L2 Informatique 2025-2026"
+                value={promotion}
+                onChange={(e) => setPromotion(e.target.value)}
+                className="input"
+              />
+            </div>
+
+            {/* Numéro Mobile Money à débiter */}
+            <div>
+              <label htmlFor="mobileMoneyPhone" className="label">
+                Numéro Mobile Money à débiter *
+              </label>
+              <input
+                id="mobileMoneyPhone"
+                type="tel"
+                inputMode="numeric"
+                placeholder="Ex: 081 234 5678"
+                value={mobileMoneyPhone}
+                onChange={(e) => setMobileMoneyPhone(e.target.value)}
+                className="input"
+                required
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Compte M-Pesa, Airtel Money ou Orange Money qui contient l&apos;argent.
+                Peut être différent de votre numéro de connexion.
+              </p>
             </div>
 
             {/* Montant */}
@@ -410,8 +460,8 @@ export default function PaymentPage() {
             )}
 
             <button
-              onClick={() => motif && parseFloat(amount) > 0 && setStep(4)}
-              disabled={!motif || !amount || parseFloat(amount) <= 0}
+              onClick={() => motif && parseFloat(amount) > 0 && mobileMoneyPhone && setStep(4)}
+              disabled={!motif || !amount || parseFloat(amount) <= 0 || !mobileMoneyPhone}
               className="btn-primary w-full mt-2"
             >
               Continuer
@@ -452,10 +502,20 @@ export default function PaymentPage() {
               </div>
               {studentNumber && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">N° étudiant</span>
+                  <span className="text-gray-500">Matricule</span>
                   <span className="font-medium">{studentNumber}</span>
                 </div>
               )}
+              {promotion && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Promotion</span>
+                  <span className="font-medium text-right">{promotion}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Mobile Money</span>
+                <span className="font-medium">{mobileMoneyPhone}</span>
+              </div>
 
               <hr className="border-gray-100" />
 

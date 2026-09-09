@@ -24,6 +24,8 @@ interface AuthState {
   verifyOtp: (phone: string, otp: string) => Promise<boolean>;
   logout: () => void;
   loadUser: () => Promise<void>;
+  /** Met à jour le profil localement (username, nom, matricule, promotion) */
+  updateProfile: (data: Partial<User>) => void;
   clearError: () => void;
 }
 
@@ -128,6 +130,22 @@ export const useAuthStore = create<AuthState>()(
           get().logout();
           set({ isLoading: false });
         }
+      },
+
+      /**
+       * Met à jour les champs du profil (nom d'utilisateur, matricule, etc.)
+       * Persiste via le middleware Zustand. Backend API à brancher plus tard.
+       */
+      updateProfile: (data: Partial<User>) => {
+        const current = get().user;
+        if (!current) return;
+        set({
+          user: {
+            ...current,
+            ...data,
+            updatedAt: new Date().toISOString(),
+          },
+        });
       },
 
       clearError: () => set({ error: null }),

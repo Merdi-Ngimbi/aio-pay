@@ -40,11 +40,13 @@ export type PaymentMotif =
  */
 export interface User {
   id: string;
-  phone: string;                 // Numéro de téléphone (identifiant principal)
-  fullName?: string;
-  studentNumber?: string;        // Numéro étudiant (pour les étudiants)
+  phone: string;                 // Téléphone d'inscription (OTP)
+  username?: string;             // Nom d'utilisateur affiché (modifiable)
+  fullName?: string;             // Nom complet de l'étudiant
+  studentNumber?: string;        // Matricule étudiant
+  promotion?: string;            // Promotion / année (ex: L2 Informatique 2025)
   role: UserRole;
-  universityId?: string;         // Lié à une université si étudiant ou staff université
+  universityId?: string;         // Université principale de l'étudiant
   createdAt: string;
   updatedAt: string;
 }
@@ -95,6 +97,12 @@ export interface Payment {
   updatedAt: string;
   paidAt?: string;
 
+  /** Infos figées sur le reçu au moment du paiement */
+  studentName?: string;
+  studentNumber?: string;        // Matricule
+  promotion?: string;
+  mobileMoneyPhone?: string;     // Numéro MM débité
+
   // Relations (optionnelles selon le contexte)
   student?: User;
   university?: University;
@@ -120,6 +128,9 @@ export interface CreatePaymentDto {
   motif: PaymentMotif;
   amount: number;
   studentNumber?: string;
+  promotion?: string;
+  /** Numéro Mobile Money qui sera débité (peut différer du téléphone de compte) */
+  mobileMoneyPhone: string;
 }
 
 /**
