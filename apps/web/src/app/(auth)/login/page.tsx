@@ -2,13 +2,6 @@
  * ============================================================
  * AIO PAY - Page de connexion / inscription
  * ============================================================
- *
- * Flux en 2 étapes :
- * 1. Saisie du numéro de téléphone → envoi OTP
- * 2. Saisie de l'OTP → connexion + redirection dashboard
- *
- * Design : thème bordeaux + orange (marque AIO Pay)
- * ============================================================
  */
 
 "use client";
@@ -18,6 +11,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuthStore } from "@/stores/auth-store";
+import { TextField } from "@/components/ui/form";
 import { toast } from "sonner";
 import { Phone, KeyRound, ArrowLeft, Loader2 } from "lucide-react";
 
@@ -79,7 +73,7 @@ export default function LoginPage() {
               alt="AIO Pay"
               width={100}
               height={100}
-              className="rounded-2xl shadow-md"
+              className="rounded-[1.75rem] shadow-soft"
               priority
             />
           </Link>
@@ -91,30 +85,19 @@ export default function LoginPage() {
         <div className="card">
           {step === "phone" ? (
             <form onSubmit={handleRequestOtp} className="space-y-6">
-              <div>
-                <label htmlFor="phone" className="label">
-                  Numéro de téléphone
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Phone className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="phone"
-                    type="tel"
-                    inputMode="numeric"
-                    placeholder="081 234 5678"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="input pl-10"
-                    required
-                    autoFocus
-                  />
-                </div>
-                <p className="mt-1.5 text-xs text-gray-500">
-                  Format : 08X XXX XXXX ou +243 8X XXX XXXX
-                </p>
-              </div>
+              <TextField
+                id="phone"
+                label="Numéro de téléphone"
+                required
+                type="tel"
+                inputMode="numeric"
+                placeholder="081 234 5678"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                autoFocus
+                leftIcon={<Phone className="h-5 w-5 stroke-[1.5]" />}
+                helperText="Format : 08X XXX XXXX ou +243 8X XXX XXXX"
+              />
 
               <button
                 type="submit"
@@ -142,35 +125,25 @@ export default function LoginPage() {
                 }}
                 className="flex items-center text-sm text-gray-600 hover:text-gray-900"
               >
-                <ArrowLeft className="h-4 w-4 mr-1" />
+                <ArrowLeft className="h-4 w-4 mr-1 stroke-[1.5]" />
                 Modifier le numéro
               </button>
 
-              <div>
-                <label htmlFor="otp" className="label">
-                  Code OTP reçu par SMS
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <KeyRound className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="otp"
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={6}
-                    placeholder="123456"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                    className="input pl-10 tracking-widest text-center text-lg"
-                    required
-                    autoFocus
-                  />
-                </div>
-                <p className="mt-1.5 text-xs text-gray-500">
-                  Code envoyé au {phone}
-                </p>
-              </div>
+              <TextField
+                id="otp"
+                label="Code OTP reçu par SMS"
+                required
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                placeholder="123456"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                autoFocus
+                leftIcon={<KeyRound className="h-5 w-5 stroke-[1.5]" />}
+                className="tracking-widest text-center text-lg"
+                helperText={`Code envoyé au ${phone}`}
+              />
 
               <button
                 type="submit"
@@ -191,8 +164,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={handleRequestOtp}
                 disabled={isLoading}
-                className="w-full text-sm font-medium"
-                style={{ color: "#6B0F1A" }}
+                className="w-full text-sm font-medium text-[var(--aio-bordeaux)]"
               >
                 Renvoyer le code
               </button>

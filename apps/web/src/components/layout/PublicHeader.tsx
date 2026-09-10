@@ -1,8 +1,6 @@
 /**
  * ============================================================
- * AIO PAY - En-tête pages publiques
- * ============================================================
- * Menu de navigation pour l'accueil, À propos, Contact, etc.
+ * AIO PAY - En-tête pages publiques (style soft)
  * ============================================================
  */
 
@@ -23,48 +21,45 @@ export default function PublicHeader() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-      <div className="mx-auto max-w-6xl px-4 h-14 flex items-center justify-between">
+    <header className="bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-soft">
+      <div className="mx-auto max-w-6xl px-4 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/icon.png" alt="AIO Pay" width={32} height={32} className="rounded-lg" />
-          <span className="font-bold text-[#6B0F1A]">AIO Pay</span>
+          <Image src="/icon.png" alt="AIO Pay" width={36} height={36} className="rounded-2xl" />
+          <span className="font-bold text-[var(--aio-bordeaux)]">AIO Pay</span>
         </Link>
 
-        {/* Desktop */}
         <nav className="hidden md:flex items-center gap-6">
           {NAV_LINKS.map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              className="text-sm font-medium text-gray-600 hover:text-[#6B0F1A] transition-colors"
+              className="text-sm font-medium text-gray-600 hover:text-[var(--aio-bordeaux)] transition-colors"
             >
               {l.label}
             </Link>
           ))}
-          <Link href="/login" className="btn-primary text-sm px-4 py-2">
+          <Link href="/login" className="btn-primary text-sm px-5 py-2.5">
             Se connecter
           </Link>
         </nav>
 
-        {/* Mobile toggle */}
         <button
-          className="md:hidden p-2 text-gray-600"
+          className="md:hidden p-2 text-gray-600 rounded-full hover:bg-gray-50"
           onClick={() => setOpen(!open)}
           aria-label="Menu"
         >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {open ? <X className="h-5 w-5 stroke-[1.5]" /> : <Menu className="h-5 w-5 stroke-[1.5]" />}
         </button>
       </div>
 
-      {/* Mobile menu */}
       {open && (
-        <div className="md:hidden border-t border-gray-100 bg-white px-4 py-3 space-y-2">
+        <div className="md:hidden border-t border-gray-100 bg-white px-4 py-3 space-y-1">
           {NAV_LINKS.map((l) => (
             <Link
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              className="block py-2 text-sm font-medium text-gray-700"
+              className="block py-2.5 text-sm font-medium text-gray-700 rounded-xl px-2 hover:bg-[var(--aio-cream)]"
             >
               {l.label}
             </Link>

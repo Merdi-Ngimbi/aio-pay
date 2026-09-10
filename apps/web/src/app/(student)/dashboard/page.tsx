@@ -2,8 +2,8 @@
  * ============================================================
  * AIO PAY - Dashboard Étudiant
  * ============================================================
- * Page principale après connexion.
- * Affiche un résumé et les actions rapides (Payer, Historique).
+ * Layout fintech soft : greeting, banner promo, carousel compte,
+ * quick actions, dernières transactions.
  * ============================================================
  */
 
@@ -13,17 +13,25 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/stores/auth-store";
-import StudentHeader from "@/components/layout/StudentHeader";
+import StudentShell from "@/components/layout/StudentShell";
+import {
+  PromoBanner,
+  AccountCard,
+  QuickAction,
+  TransactionRow,
+} from "@/components/ui/fintech";
 import { getMyPayments } from "@/lib/api";
-import { formatAmount, formatDate, translateStatus, getStatusColor } from "@/lib/utils";
+import { formatAmount, formatDate, translateMotif } from "@/lib/utils";
 import type { Payment } from "@/types";
 import {
   CreditCard,
   History,
   Receipt,
-  ArrowRight,
+  UserCircle,
   Loader2,
   CheckCircle2,
+  Mail,
+  FileText,
 } from "lucide-react";
 
 export default function StudentDashboard() {
@@ -32,7 +40,6 @@ export default function StudentDashboard() {
   const [recentPayments, setRecentPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Vérifie l'authentification au chargement
   useEffect(() => {
     loadUser().then(() => {
       if (!isAuthenticated) {
@@ -41,103 +48,118 @@ export default function StudentDashboard() {
     });
   }, [isAuthenticated, loadUser, router]);
 
-  // Charge les derniers paiements
   useEffect(() => {
     if (!isAuthenticated) return;
 
     getMyPayments()
       .then((res) => {
         if (res.success && res.data) {
-          // On garde seulement les 3 plus récents
-          setRecentPayments(res.data.slice(0, 3));
+          setRecentPayments(res.data.slice(0, 5));
         }
       })
-      .catch(() => {
-        // En cas d'erreur API (backend pas encore prêt), on ignore silencieusement
-      })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[#6B0F1A]" />
+      <div className="min-h-screen flex items-center justify-center bg-[var(--aio-cream)]">
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--aio-bordeaux)]" />
       </div>
     );
   }
 
+  const firstName =
+    user?.fullName?.split(" ")[0] ||
+    user?.username ||
+    "étudiant";
+
+  const totalPaid = recentPayments
+    .filter((p) => p.status === "SUCCESS")
+    .reduce((sum, p) => sum + (p.totalAmount || 0), 0);
+
+  const pendingCount = recentPayments.filter(
+    (p) => p.status === "PENDING" || p.status === "PROCESSING"
+  ).length;
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <StudentHeader />
-
-      <main className="mx-auto max-w-lg px-4 py-6 space-y-6">
-        {/* Message de bienvenue */}
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">
-            Bonjour{user?.fullName ? `, ${user.fullName.split(" ")[0]}` : ""} 👋
+    <StudentShell>
+      <main className="student-content space-y-6">
+        {/* Greeting + mail */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+            Hi {firstName}
           </h1>
-          <p className="text-sm text-gray-600 mt-1">
-            Payez vos frais académiques en quelques minutes.
-          </p>
-        </div>
-
-        {/* Bouton principal : Nouveau paiement */}
-        <Link
-          href="/payment"
-          className="card flex items-center gap-4 hover:shadow-md transition-shadow active:scale-[0.98]"
-        >
-          <div className="h-12 w-12 rounded-xl bg-[#6B0F1A] flex items-center justify-center flex-shrink-0">
-            <CreditCard className="h-6 w-6 text-white" />
-          </div>
-          <div className="flex-1">
-            <h2 className="font-semibold text-gray-900">Nouveau paiement</h2>
-            <p className="text-sm text-gray-500">
-              Inscription, examen, minerval...
-            </p>
-          </div>
-          <ArrowRight className="h-5 w-5 text-gray-400" />
-        </Link>
-
-        {/* Actions secondaires */}
-        <div className="grid grid-cols-2 gap-3">
           <Link
-            href="/history"
-            className="card flex flex-col items-center gap-2 py-5 hover:shadow-md transition-shadow"
+            href="/contact"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-soft text-gray-700 hover:text-[var(--aio-bordeaux)] transition-colors"
+            aria-label="Support"
           >
-            <History className="h-6 w-6 text-[#6B0F1A]" />
-            <span className="text-sm font-medium text-gray-900">Historique</span>
-          </Link>
-          <Link
-            href="/history"
-            className="card flex flex-col items-center gap-2 py-5 hover:shadow-md transition-shadow"
-          >
-            <Receipt className="h-6 w-6 text-[#6B0F1A]" />
-            <span className="text-sm font-medium text-gray-900">Mes reçus</span>
+            <Mail className="h-5 w-5 stroke-[1.5]" />
           </Link>
         </div>
 
-        {/* Derniers paiements */}
+        {/* Banner promo */}
+        <PromoBanner
+          title="Payez vos frais académiques en quelques minutes"
+          ctaLabel="Commencer"
+          ctaHref="/payment"
+        />
+
+        {/* Carousel de cartes compte */}
+        <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-1 px-1 scrollbar-none">
+          <AccountCard
+            label="Tous les comptes"
+            balance={formatAmount(totalPaid || 0)}
+            subtitle="Total payé (réussis)"
+            variant="primary"
+          />
+          <AccountCard
+            label="En cours"
+            balance={String(pendingCount)}
+            subtitle="Paiements en attente"
+            variant="secondary"
+          />
+        </div>
+
+        {/* Quick actions */}
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-semibold text-gray-900">Derniers paiements</h2>
-            <Link href="/history" className="text-sm text-[#6B0F1A]">
+          <h2 className="text-sm font-semibold text-gray-900 mb-4">Actions rapides</h2>
+          <div className="grid grid-cols-4 gap-3">
+            <QuickAction href="/payment" icon={CreditCard} label="Payer" />
+            <QuickAction href="/history" icon={History} label="Historique" />
+            <QuickAction href="/history" icon={Receipt} label="Reçus" />
+            <QuickAction href="/profile" icon={UserCircle} label="Profil" />
+          </div>
+        </div>
+
+        {/* Dernières transactions */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-gray-900">
+              Dernières transactions
+            </h2>
+            <Link
+              href="/history"
+              className="text-sm font-medium text-[var(--aio-bordeaux)]"
+            >
               Voir tout
             </Link>
           </div>
 
           {loading ? (
-            <div className="card flex justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-[#6B0F1A]" />
+            <div className="card flex justify-center py-10">
+              <Loader2 className="h-6 w-6 animate-spin text-[var(--aio-bordeaux)]" />
             </div>
           ) : recentPayments.length === 0 ? (
-            <div className="card text-center py-8">
-              <CheckCircle2 className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+            <div className="card text-center py-10">
+              <CheckCircle2 className="h-10 w-10 text-gray-300 mx-auto mb-3 stroke-[1.5]" />
               <p className="text-sm text-gray-500">
-                Aucun paiement pour le moment.
+                Aucune transaction pour le moment.
               </p>
               <Link
                 href="/payment"
-                className="inline-block mt-3 text-sm text-[#6B0F1A] font-medium"
+                className="inline-block mt-3 text-sm text-[var(--aio-bordeaux)] font-medium"
               >
                 Faire mon premier paiement →
               </Link>
@@ -145,53 +167,30 @@ export default function StudentDashboard() {
           ) : (
             <div className="space-y-3">
               {recentPayments.map((payment) => (
-                <Link
+                <TransactionRow
                   key={payment.id}
                   href={`/receipt/${payment.id}`}
-                  className="card flex items-center justify-between hover:shadow-md transition-shadow"
-                >
-                  <div>
-                    <p className="font-medium text-gray-900 text-sm">
-                      {payment.motif === "INSCRIPTION"
-                        ? "Inscription"
-                        : payment.motif === "EXAMEN"
-                        ? "Examen"
-                        : payment.motif === "MINERVAL"
-                        ? "Minerval"
-                        : payment.motif === "FRAIS_SESSION"
-                        ? "Frais de session"
-                        : "Autre"}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {formatDate(payment.createdAt)}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-gray-900 text-sm">
-                      {formatAmount(payment.totalAmount)}
-                    </p>
-                    <span
-                      className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full ${getStatusColor(
-                        payment.status
-                      )}`}
-                    >
-                      {translateStatus(payment.status)}
-                    </span>
-                  </div>
-                </Link>
+                  title={translateMotif(payment.motif)}
+                  subtitle="Paiement"
+                  amount={formatAmount(payment.totalAmount)}
+                  date={formatDate(payment.createdAt)}
+                  icon={FileText}
+                />
               ))}
             </div>
           )}
         </div>
 
-        {/* Info frais de service */}
-        <div className="rounded-xl bg-[#FDF8F6] border border-[#F5E6E8] p-4 text-sm text-[#6B0F1A]">
-          <p className="font-medium">Frais de service</p>
-          <p className="mt-1 text-[#6B0F1A]">
-            1,50 USD seulement (équivalent du transport en agence).
-          </p>
+        {/* Info frais */}
+        <div className="info-box !bg-[var(--aio-cream)] !text-[var(--aio-bordeaux)] border border-[#F5E6E8]">
+          <div>
+            <p className="font-medium text-[var(--aio-bordeaux)]">Frais de service</p>
+            <p className="mt-1 text-sm opacity-90">
+              1,50 USD seulement — l&apos;équivalent d&apos;un trajet en agence.
+            </p>
+          </div>
         </div>
       </main>
-    </div>
+    </StudentShell>
   );
 }

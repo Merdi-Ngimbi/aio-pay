@@ -24,7 +24,8 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuthStore } from "@/stores/auth-store";
-import StudentHeader from "@/components/layout/StudentHeader";
+import StudentShell from "@/components/layout/StudentShell";
+import { InfoBox } from "@/components/ui/fintech";
 import { getPaymentById, checkPaymentStatus } from "@/lib/api";
 import {
   formatAmount,
@@ -130,23 +131,22 @@ export default function ReceiptPage() {
 
   if (!isAuthenticated || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[#6B0F1A]" />
+      <div className="min-h-screen flex items-center justify-center bg-[var(--aio-cream)]">
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--aio-bordeaux)]" />
       </div>
     );
   }
 
   if (!payment) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <StudentHeader />
-        <main className="mx-auto max-w-lg px-4 py-12 text-center">
+      <StudentShell>
+        <main className="student-content text-center py-12">
           <p className="text-gray-500">Paiement introuvable.</p>
-          <Link href="/history" className="text-[#6B0F1A] text-sm mt-4 inline-block">
+          <Link href="/history" className="text-[var(--aio-bordeaux)] text-sm mt-4 inline-block">
             ← Retour à l&apos;historique
           </Link>
         </main>
-      </div>
+      </StudentShell>
     );
   }
 
@@ -177,18 +177,18 @@ export default function ReceiptPage() {
     "—";
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <StudentHeader />
-
-      <main className="mx-auto max-w-lg px-4 py-6">
-        <div className="flex items-center gap-3 mb-6">
+    <StudentShell>
+      <main className="student-content space-y-6">
+        <div className="flex items-center gap-3">
           <Link
             href="/history"
-            className="p-2 rounded-lg hover:bg-gray-100 text-gray-600"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-soft text-gray-600 hover:text-[var(--aio-bordeaux)]"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5 stroke-[1.5]" />
           </Link>
-          <h1 className="text-xl font-bold text-gray-900">Reçu de paiement</h1>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+            Reçu de paiement
+          </h1>
         </div>
 
         {/* Carte du reçu */}
@@ -200,10 +200,10 @@ export default function ReceiptPage() {
               alt="AIO Pay"
               width={48}
               height={48}
-              className="rounded-lg mb-3"
+              className="rounded-2xl mb-3"
             />
             <StatusIcon
-              className={`h-12 w-12 ${
+              className={`h-12 w-12 stroke-[1.5] ${
                 payment.status === "SUCCESS"
                   ? "text-green-500"
                   : payment.status === "FAILED"
@@ -234,7 +234,7 @@ export default function ReceiptPage() {
 
           {/* Informations étudiant */}
           <div>
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#F5A623] mb-3">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--aio-orange)] mb-3">
               Étudiant
             </h2>
             <div className="space-y-2.5 text-sm">
@@ -254,7 +254,7 @@ export default function ReceiptPage() {
 
           {/* Paiement */}
           <div>
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#F5A623] mb-3">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--aio-orange)] mb-3">
               Détails du paiement
             </h2>
             <div className="space-y-2.5 text-sm">
@@ -283,7 +283,7 @@ export default function ReceiptPage() {
 
           {/* QR Code */}
           <div className="flex flex-col items-center py-2">
-            <p className="text-xs font-semibold uppercase tracking-wider text-[#F5A623] mb-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--aio-orange)] mb-3">
               QR Code de vérification
             </p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -292,7 +292,7 @@ export default function ReceiptPage() {
               alt={`QR Code ${payment.reference}`}
               width={160}
               height={160}
-              className="rounded-lg border border-gray-100"
+              className="rounded-2xl border border-gray-100"
             />
             <p className="text-xs text-gray-500 mt-2 text-center max-w-[220px]">
               Scannez ce code pour vérifier la référence {payment.reference}
@@ -308,9 +308,9 @@ export default function ReceiptPage() {
                     "La génération PDF sera disponible après branchement du backend."
                   )
                 }
-                className="btn-primary w-full"
+                className="btn-dark w-full"
               >
-                <Download className="mr-2 h-4 w-4" />
+                <Download className="mr-2 h-4 w-4 stroke-[1.5]" />
                 Télécharger le reçu (PDF)
               </button>
             )}
@@ -325,7 +325,7 @@ export default function ReceiptPage() {
                 {checking ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
-                  <RefreshCw className="mr-2 h-4 w-4" />
+                  <RefreshCw className="mr-2 h-4 w-4 stroke-[1.5]" />
                 )}
                 Vérifier le statut
               </button>
@@ -333,11 +333,11 @@ export default function ReceiptPage() {
           </div>
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-6">
+        <InfoBox>
           Ce reçu a la même valeur qu&apos;un paiement effectué en agence bancaire.
-        </p>
+        </InfoBox>
       </main>
-    </div>
+    </StudentShell>
   );
 }
 

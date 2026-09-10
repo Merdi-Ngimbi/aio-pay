@@ -9,10 +9,8 @@
  * - Blanc              : #FFFFFF
  * - Fond clair         : #FDF8F6
  *
- * Ce fichier définit :
- * - Les variables CSS de marque
- * - Les classes utilitaires (boutons, cartes, inputs)
- * - Le rendu mobile-first
+ * Langage UI inspiré fintech soft (cards très arrondies,
+ * soft shadows, bottom nav mobile / sidebar desktop).
  * ============================================================
  */
 
@@ -35,7 +33,10 @@
 
   --background: var(--aio-cream);
   --foreground: #1F2937;
-  --radius: 0.75rem;
+  --radius: 1.5rem;
+  --radius-sm: 1rem;
+  --radius-pill: 9999px;
+  --shadow-soft: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
 }
 
 @layer base {
@@ -54,10 +55,11 @@
 }
 
 @layer components {
-  /* Bouton principal (bordeaux) */
+  /* Bouton principal (bordeaux) — coins très arrondis style fintech */
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center rounded-2xl px-6 py-3.5 text-sm font-semibold text-white transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
     background-color: var(--aio-bordeaux);
+    box-shadow: var(--shadow-soft);
   }
   .btn-primary:hover {
     background-color: var(--aio-bordeaux-dark);
@@ -68,9 +70,9 @@
 
   /* Bouton secondaire (contour) */
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 text-sm font-semibold shadow-sm ring-1 ring-inset transition-all hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50;
+    @apply inline-flex items-center justify-center rounded-2xl bg-white px-6 py-3.5 text-sm font-semibold transition-all hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50;
     color: var(--aio-bordeaux);
-    --tw-ring-color: #E5E7EB;
+    box-shadow: var(--shadow-soft);
   }
   .btn-secondary:focus {
     --tw-ring-color: var(--aio-bordeaux);
@@ -78,28 +80,72 @@
 
   /* Bouton accent orange */
   .btn-accent {
-    @apply inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50;
+    @apply inline-flex items-center justify-center rounded-2xl px-6 py-3.5 text-sm font-semibold text-white transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50;
     background-color: var(--aio-orange);
+    box-shadow: var(--shadow-soft);
   }
   .btn-accent:hover {
     background-color: var(--aio-orange-dark);
   }
 
-  /* Carte standard */
+  /* Bouton CTA noir/sombre (style Finto) — utilise bordeaux foncé */
+  .btn-dark {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3.5 text-sm font-semibold text-white transition-all focus:outline-none disabled:opacity-50;
+    background-color: var(--aio-bordeaux-dark);
+    box-shadow: var(--shadow-soft);
+  }
+  .btn-dark:hover {
+    background-color: #2d060b;
+  }
+
+  /* Carte soft fintech — coins très arrondis + soft shadow */
   .card {
-    @apply rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100;
+    @apply rounded-[1.75rem] bg-white p-6;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .card-sm {
+    @apply rounded-3xl bg-white p-4;
+    box-shadow: var(--shadow-soft);
   }
 
   /* Input standard */
   .input {
-    @apply block w-full rounded-xl border-0 py-3 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm;
+    @apply block w-full rounded-2xl border-0 py-3.5 px-4 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm;
+    box-shadow: inset 0 0 0 1px #e5e7eb;
+    background: #fff;
   }
   .input:focus {
     --tw-ring-color: var(--aio-bordeaux);
+    box-shadow: inset 0 0 0 1px transparent;
   }
 
   /* Label */
   .label {
     @apply block text-sm font-medium text-gray-700 mb-1.5;
+  }
+
+  /* Action circulaire (quick actions) */
+  .quick-action {
+    @apply flex flex-col items-center gap-2;
+  }
+  .quick-action-btn {
+    @apply flex h-14 w-14 items-center justify-center rounded-full bg-white text-gray-800 transition-transform active:scale-95;
+    box-shadow: var(--shadow-soft);
+  }
+  .quick-action-btn:hover {
+    color: var(--aio-bordeaux);
+  }
+
+  /* Info box douce */
+  .info-box {
+    @apply flex gap-3 rounded-3xl p-4 text-sm;
+    background: var(--aio-gray-light);
+    color: var(--aio-gray);
+  }
+
+  /* Zone de contenu pages étudiant */
+  .student-content {
+    @apply mx-auto w-full max-w-2xl px-4 py-6 pb-28 lg:max-w-4xl lg:px-8 lg:pb-8;
   }
 }
