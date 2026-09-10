@@ -18,7 +18,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
 import StudentHeader from "@/components/layout/StudentHeader";
-import { getUniversities, getBanksByUniversity, createPayment } from "@/lib/api";
+import {
+  getUniversities,
+  getBanksByUniversity,
+  createPayment,
+} from "@/lib/api";
 import { formatAmount } from "@/lib/utils";
 import type { University, Bank, PaymentMotif } from "@/types";
 import { toast } from "sonner";
@@ -58,7 +62,8 @@ export default function PaymentPage() {
   const [submitting, setSubmitting] = useState(false);
 
   // Données sélectionnées
-  const [selectedUniversity, setSelectedUniversity] = useState<University | null>(null);
+  const [selectedUniversity, setSelectedUniversity] =
+    useState<University | null>(null);
   const [selectedBank, setSelectedBank] = useState<Bank | null>(null);
   const [motif, setMotif] = useState<PaymentMotif | "">("");
   const [amount, setAmount] = useState("");
@@ -99,14 +104,62 @@ export default function PaymentPage() {
         // Mode démo multi-universités
         const now = new Date().toISOString();
         setUniversities([
-          { id: "unikin-001", name: "Université de Kinshasa (UNIKIN)", code: "UNIKIN", isActive: true, createdAt: now },
-          { id: "upc-001", name: "Université Protestante au Congo (UPC)", code: "UPC", isActive: true, createdAt: now },
-          { id: "upn-001", name: "Université Pédagogique Nationale (UPN)", code: "UPN", isActive: true, createdAt: now },
-          { id: "ufasic-001", name: "Université Francophone Afrique-Sicile (UFASIC)", code: "UFASIC", isActive: true, createdAt: now },
-          { id: "aba-001", name: "Académie des Beaux-Arts (ABA)", code: "ABA", isActive: true, createdAt: now },
-          { id: "isau-001", name: "Institut Supérieur d'Architecture et d'Urbanisme (ISAU)", code: "ISAU", isActive: true, createdAt: now },
-          { id: "isp-gombe-001", name: "Institut Supérieur Pédagogique de la Gombe (ISP GOMBE)", code: "ISP-GOMBE", isActive: true, createdAt: now },
-          { id: "hec-001", name: "Hautes Études Commerciales (HEC)", code: "HEC", isActive: true, createdAt: now },
+          {
+            id: "unikin-001",
+            name: "Université de Kinshasa (UNIKIN)",
+            code: "UNIKIN",
+            isActive: true,
+            createdAt: now,
+          },
+          {
+            id: "upc-001",
+            name: "Université Protestante au Congo (UPC)",
+            code: "UPC",
+            isActive: true,
+            createdAt: now,
+          },
+          {
+            id: "upn-001",
+            name: "Université Pédagogique Nationale (UPN)",
+            code: "UPN",
+            isActive: true,
+            createdAt: now,
+          },
+          {
+            id: "ufasic-001",
+            name: "Université Francophone Afrique-Sicile (UFASIC)",
+            code: "UFASIC",
+            isActive: true,
+            createdAt: now,
+          },
+          {
+            id: "aba-001",
+            name: "Académie des Beaux-Arts (ABA)",
+            code: "ABA",
+            isActive: true,
+            createdAt: now,
+          },
+          {
+            id: "isau-001",
+            name: "Institut Supérieur d'Architecture et d'Urbanisme (ISAU)",
+            code: "ISAU",
+            isActive: true,
+            createdAt: now,
+          },
+          {
+            id: "isp-gombe-001",
+            name: "Institut Supérieur Pédagogique de la Gombe (ISP GOMBE)",
+            code: "ISP-GOMBE",
+            isActive: true,
+            createdAt: now,
+          },
+          {
+            id: "hec-001",
+            name: "Hautes Études Commerciales (HEC)",
+            code: "HEC",
+            isActive: true,
+            createdAt: now,
+          },
         ]);
       })
       .finally(() => setLoading(false));
@@ -139,6 +192,34 @@ export default function PaymentPage() {
             universityId: selectedUniversity.id,
             isActive: true,
           },
+          {
+            id: "tmb-demo",
+            name: "Tmb",
+            code: "TMB",
+            universityId: selectedUniversity.id,
+            isActive: true,
+          },
+          {
+            id: "ecobank-demo",
+            name: "Ecobank",
+            code: "ECOBANK",
+            universityId: selectedUniversity.id,
+            isActive: true,
+          },
+          {
+            id: "uba-demo",
+            name: "Uba",
+            code: "UBA",
+            universityId: selectedUniversity.id,
+            isActive: true,
+          },
+          {
+            id: "access-demo",
+            name: "Access BANK",
+            code: "ACCESS",
+            universityId: selectedUniversity.id,
+            isActive: true,
+          },
         ]);
       })
       .finally(() => setLoading(false));
@@ -150,7 +231,14 @@ export default function PaymentPage() {
    * Soumission finale → crée le paiement et redirige vers FlexPay
    */
   const handleConfirm = async () => {
-    if (!selectedUniversity || !selectedBank || !motif || !amount || !mobileMoneyPhone) return;
+    if (
+      !selectedUniversity ||
+      !selectedBank ||
+      !motif ||
+      !amount ||
+      !mobileMoneyPhone
+    )
+      return;
 
     setSubmitting(true);
     try {
@@ -418,8 +506,8 @@ export default function PaymentPage() {
                 required
               />
               <p className="text-xs text-gray-500 mt-1">
-                Compte M-Pesa, Airtel Money ou Orange Money qui contient l&apos;argent.
-                Peut être différent de votre numéro de connexion.
+                Compte M-Pesa, Airtel Money ou Orange Money qui contient
+                l&apos;argent. Peut être différent de votre numéro de connexion.
               </p>
             </div>
 
@@ -449,7 +537,9 @@ export default function PaymentPage() {
                   <span>{formatAmount(parseFloat(amount))}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Frais de service AIO Pay</span>
+                  <span className="text-gray-600">
+                    Frais de service AIO Pay
+                  </span>
                   <span>{formatAmount(SERVICE_FEE)}</span>
                 </div>
                 <div className="flex justify-between font-semibold text-gray-900 pt-2 border-t border-gray-200">
@@ -460,8 +550,18 @@ export default function PaymentPage() {
             )}
 
             <button
-              onClick={() => motif && parseFloat(amount) > 0 && mobileMoneyPhone && setStep(4)}
-              disabled={!motif || !amount || parseFloat(amount) <= 0 || !mobileMoneyPhone}
+              onClick={() =>
+                motif &&
+                parseFloat(amount) > 0 &&
+                mobileMoneyPhone &&
+                setStep(4)
+              }
+              disabled={
+                !motif ||
+                !amount ||
+                parseFloat(amount) <= 0 ||
+                !mobileMoneyPhone
+              }
               className="btn-primary w-full mt-2"
             >
               Continuer
